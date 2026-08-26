@@ -93,6 +93,11 @@ def extract_candidates(page_url: str, body: bytes) -> list[str]:
             candidate = unquote(match.group(1)).replace("\\u0026", "&")
             if candidate.startswith("//"):
                 candidate = "https:" + candidate
+            parsed = urlparse(candidate)
+            # Threads/Instagram pages can expose a generic site asset ending in
+            # .mp4. It is not the post media and must not be treated as a hit.
+            if parsed.hostname == "static.cdninstagram.com" and parsed.path.startswith("/rsrc.php/"):
+                continue
             if candidate.startswith("http") and candidate not in found:
                 found.append(candidate)
     return found
